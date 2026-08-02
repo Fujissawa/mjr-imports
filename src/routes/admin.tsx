@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ArrowLeft, Edit, Trash2, Save, X } from "lucide-react";
 
 import { products, type Product } from "@/lib/data";
+import { AlbumImporter } from "@/components/AlbumImporter";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -76,6 +77,8 @@ function Admin() {
             + Register Product
           </button>
         </div>
+
+        <AlbumImporter />
 
         <div className="overflow-hidden rounded-2xl border border-white/5 bg-surface/50">
           <div className="overflow-x-auto">
