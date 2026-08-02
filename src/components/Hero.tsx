@@ -9,7 +9,6 @@ export function Hero() {
         width={1920}
         height={600}
         className="absolute inset-0 h-full w-full object-cover opacity-40"
-        priority
       />
       <div className="absolute inset-0 bg-gradient-to-r from-pitch/80 via-pitch/40 to-transparent" />
       <div className="relative z-10 px-8 md:px-16">
