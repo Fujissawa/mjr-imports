@@ -19,7 +19,6 @@ export const defaultFilters: FilterState = {
 export function Filters({
   filters,
   onChange,
-  resultCount,
 }: {
   filters: FilterState;
   onChange: (filters: FilterState) => void;
