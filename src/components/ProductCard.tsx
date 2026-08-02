@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import type { Product } from "@/lib/data";
 
 const badgeStyles: Record<Product["badge"], string> = {
@@ -11,7 +12,11 @@ const badgeStyles: Record<Product["badge"], string> = {
 export function ProductCard({ product }: { product: Product }) {
   return (
     <div className="group rounded-2xl border border-white/5 bg-surface p-4 transition-all hover:border-brand/50">
-      <div className="relative mb-4 aspect-[4/5] overflow-hidden rounded-xl">
+      <Link
+        to="/produto/$id"
+        params={{ id: product.id }}
+        className="relative mb-4 block aspect-[4/5] overflow-hidden rounded-xl"
+      >
         <img
           src={product.image}
           alt={product.name}
@@ -25,10 +30,19 @@ export function ProductCard({ product }: { product: Product }) {
         >
           {product.badge}
         </div>
-      </div>
+        {product.images.length > 1 && (
+          <div className="absolute bottom-3 right-3 rounded-full bg-pitch/80 px-2 py-1 text-[10px] font-black text-white">
+            +{product.images.length - 1}
+          </div>
+        )}
+      </Link>
       <div className="flex items-start justify-between">
         <div>
-          <h4 className="font-display text-xl font-black italic uppercase tracking-tight">{product.name}</h4>
+          <h4 className="font-display text-xl font-black italic uppercase tracking-tight">
+            <Link to="/produto/$id" params={{ id: product.id }} className="hover:text-brand">
+              {product.name}
+            </Link>
+          </h4>
           <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
             {product.description}
           </p>
