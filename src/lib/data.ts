@@ -1,3 +1,7 @@
+import arsenal from "@/assets/arsenal.jpg";
+import brazil98 from "@/assets/brazil98.jpg";
+import madrid from "@/assets/madrid.jpg";
+
 export type Product = {
   id: string;
   sku: string;
@@ -9,6 +13,7 @@ export type Product = {
   size: string[];
   price: number;
   image: string;
+  images: string[];
   badge: "In Stock" | "New Drop" | "Retro Archive" | "Restock" | "Limited";
   description: string;
   stock: number;
@@ -25,7 +30,8 @@ export const products: Product[] = [
     version: "Player",
     size: ["S", "M", "L", "XL"],
     price: 349,
-    image: "/src/assets/arsenal.jpg",
+    image: arsenal,
+    images: [arsenal, hero, brazil98],
     badge: "In Stock",
     description: "Player Edition / Slim Fit",
     stock: 24,
@@ -40,7 +46,8 @@ export const products: Product[] = [
     version: "Fan",
     size: ["M", "L", "XL", "2XL"],
     price: 299,
-    image: "/src/assets/brazil98.jpg",
+    image: brazil98,
+    images: [brazil98, hero],
     badge: "Retro Archive",
     description: "Classic Fan Jersey",
     stock: 12,
@@ -55,7 +62,8 @@ export const products: Product[] = [
     version: "Limited",
     size: ["S", "M", "L"],
     price: 389,
-    image: "/src/assets/madrid.jpg",
+    image: madrid,
+    images: [madrid, hero, arsenal],
     badge: "New Drop",
     description: "Authentic Player Version",
     stock: 8,
