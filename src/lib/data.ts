@@ -1,5 +1,6 @@
 import arsenal from "@/assets/arsenal.jpg";
 import brazil98 from "@/assets/brazil98.jpg";
+import hero from "@/assets/hero.jpg";
 import madrid from "@/assets/madrid.jpg";
 
 export type Product = {
