@@ -57,7 +57,7 @@ function Index() {
       <Hero />
 
       <main className="flex flex-col gap-12 px-6 py-12 lg:flex-row">
-        <Filters filters={filters} onChange={setFilters} resultCount={filtered.length} />
+        <Filters filters={filters} onChange={setFilters} />
 
         <section className="flex-1">
           <div className="mb-8 flex flex-wrap items-center gap-2">
