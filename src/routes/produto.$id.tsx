@@ -64,7 +64,7 @@ function ProductDetail() {
               />
             </div>
             <div className="mt-4 flex gap-3">
-              {gallery.map((src, i) => (
+              {gallery.map((src: string, i: number) => (
                 <button
                   key={src + i}
                   onClick={() => setActive(i)}
@@ -88,7 +88,7 @@ function ProductDetail() {
             <div className="mt-8">
               <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Tamanho</p>
               <div className="flex flex-wrap gap-2">
-                {product.size.map((s) => (
+                {product.size.map((s: string) => (
                   <button
                     key={s}
                     onClick={() => setSize(s)}
