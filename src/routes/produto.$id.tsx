@@ -132,12 +132,3 @@ function ProductDetail() {
     </div>
   );
 }
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/produto/$id')({
-  component: RouteComponent,
-})
-
-function RouteComponent() {
-  return <div>Hello "/produto/$id"!</div>
-}
