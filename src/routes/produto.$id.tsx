@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { products } from "@/lib/data";
+import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/produto/$id")({
   loader: ({ params }) => {
@@ -38,6 +39,7 @@ function ProductDetail() {
   const gallery = product.images.length ? product.images : [product.image];
   const [active, setActive] = useState(0);
   const [size, setSize] = useState(product.size[0]);
+  const { add, setOpen } = useCart();
 
   return (
     <div className="min-h-screen bg-pitch text-white">
@@ -121,8 +123,21 @@ function ProductDetail() {
               </div>
             </dl>
 
-            <button className="mt-8 w-full rounded-xl bg-brand py-4 text-[10px] font-black uppercase tracking-[0.2em] text-pitch transition-opacity hover:opacity-90">
-              Add to Cart
+            <button
+              onClick={() => {
+                add({
+                  id: product.id,
+                  sku: product.sku,
+                  name: product.name,
+                  size: size ?? product.size[0] ?? "U",
+                  price: product.price,
+                  image: product.image,
+                });
+                setOpen(true);
+              }}
+              className="mt-8 w-full rounded-xl bg-brand py-4 text-[10px] font-black uppercase tracking-[0.2em] text-pitch transition-opacity hover:opacity-90"
+            >
+              Adicionar à sacola
             </button>
           </div>
         </div>
