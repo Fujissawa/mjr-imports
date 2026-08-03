@@ -1,7 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { ShoppingBag } from "lucide-react";
 
+import { useCart } from "@/lib/cart";
+
 export function Navbar() {
+  const { count, setOpen } = useCart();
   return (
     <nav className="sticky top-0 z-50 border-b border-white/10 bg-pitch/90 px-6 py-4 backdrop-blur-md">
       <div className="flex items-center justify-between">
@@ -25,9 +28,18 @@ export function Navbar() {
           >
             Admin Panel
           </Link>
-          <div className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-surface italic font-black text-white">
+          <button
+            onClick={() => setOpen(true)}
+            aria-label="Abrir sacola"
+            className="relative flex size-10 items-center justify-center rounded-full border border-white/10 bg-surface font-black italic text-white transition-colors hover:border-brand hover:text-brand"
+          >
             <ShoppingBag className="size-4" />
-          </div>
+            {count > 0 && (
+              <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-brand text-[10px] font-black not-italic text-pitch">
+                {count}
+              </span>
+            )}
+          </button>
         </div>
       </div>
     </nav>
