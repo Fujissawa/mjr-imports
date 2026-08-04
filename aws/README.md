@@ -1,5 +1,21 @@
 # MJR Imports na AWS — site estático (S3 + CloudFront) + backend Lambda
 
+## Atalho: deploy automatizado
+
+Toda a infra deste README está descrita em `aws/infra/template.yaml`
+(CloudFormation/SAM). Em vez de criar recurso por recurso no console:
+
+```bash
+# uma vez: aws configure   (e instalar SAM CLI)
+./aws/deploy.sh
+```
+
+O script instala as deps das Lambdas, cria/atualiza buckets, DynamoDB,
+Lambdas, API Gateway e CloudFront, faz o build com o `VITE_API_URL` correto,
+sobe o `dist/client` no S3 e invalida o cache. No fim imprime a URL do site
+e da API. As seções abaixo explicam o que cada peça faz (útil se preferir
+fazer manualmente ou precisar ajustar algo).
+
 Arquitetura:
 
 ```text
