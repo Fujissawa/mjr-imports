@@ -1,0 +1,210 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: MJR Imports - site estatico (S3 + CloudFront) + API (Lambda + DynamoDB)
+
+Parameters:
+  SiteBucketName:
+    Type: String
+    Default: mjr-site
+  CatalogBucketName:
+    Type: String
+    Default: mjrcatalog
+  AllowedOrigin:
+    Type: String
+    Default: https://mjrimports.com
+  SesFrom:
+    Type: String
+    Default: ""
+    Description: E-mail verificado no SES. Vazio desliga o envio.
+  PriceTable:
+    Type: String
+    Default: '{"ARS-24-HOME":349,"BRA-98-HOME":299,"MAD-24-THIRD":389}'
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    MemorySize: 256
+    Timeout: 15
+    Environment:
+      Variables:
+        ORDERS_TABLE: !Ref OrdersTable
+        ALLOWED_ORIGIN: !Ref AllowedOrigin
+
+Resources:
+  SiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref SiteBucketName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  CatalogBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref CatalogBucketName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedMethods: [GET, HEAD]
+            AllowedOrigins: ["*"]
+            AllowedHeaders: ["*"]
+            MaxAge: 3000
+
+  OrdersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: mjr-orders
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: orderId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: orderId
+          KeyType: HASH
+
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: $default
+      CorsConfiguration:
+        AllowOrigins: [!Ref AllowedOrigin]
+        AllowHeaders: ["content-type"]
+        AllowMethods: [GET, POST, OPTIONS]
+
+  CreateOrderFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: mjr-create-order
+      CodeUri: ../lambda/
+      Handler: create-order.handler
+      Environment:
+        Variables:
+          SES_FROM: !Ref SesFrom
+          PRICE_TABLE: !Ref PriceTable
+      Policies:
+        - DynamoDBWritePolicy: { TableName: !Ref OrdersTable }
+        - Statement:
+            - Effect: Allow
+              Action: ses:SendEmail
+              Resource: "*"
+      Events:
+        Post:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /orders, Method: POST }
+
+  GetOrderFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: mjr-get-order
+      CodeUri: ../lambda/
+      Handler: get-order.handler
+      Policies:
+        - DynamoDBReadPolicy: { TableName: !Ref OrdersTable }
+      Events:
+        Get:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /orders/{orderId}, Method: GET }
+
+  ListCatalogFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: mjr-list-catalog
+      CodeUri: ../lambda/
+      Handler: list-catalog.handler
+      Environment:
+        Variables:
+          CATALOG_BUCKET: !Ref CatalogBucketName
+          CDN_DOMAIN: !GetAtt Distribution.DomainName
+      Policies:
+        - S3ReadPolicy: { BucketName: !Ref CatalogBucketName }
+      Events:
+        Get:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /catalog, Method: GET }
+
+  OriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: mjr-oac
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        Origins:
+          - Id: site
+            DomainName: !GetAtt SiteBucket.RegionalDomainName
+            OriginAccessControlId: !GetAtt OriginAccessControl.Id
+            S3OriginConfig: { OriginAccessIdentity: "" }
+          - Id: catalog
+            DomainName: !GetAtt CatalogBucket.RegionalDomainName
+            OriginAccessControlId: !GetAtt OriginAccessControl.Id
+            S3OriginConfig: { OriginAccessIdentity: "" }
+        DefaultCacheBehavior:
+          TargetOriginId: site
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # CachingOptimized
+        CacheBehaviors:
+          - PathPattern: /produtos/*
+            TargetOriginId: catalog
+            ViewerProtocolPolicy: redirect-to-https
+            CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+
+  SiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref SiteBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal: { Service: cloudfront.amazonaws.com }
+            Action: s3:GetObject
+            Resource: !Sub "${SiteBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
+
+  CatalogBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref CatalogBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal: { Service: cloudfront.amazonaws.com }
+            Action: s3:GetObject
+            Resource: !Sub "${CatalogBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
+
+Outputs:
+  ApiUrl:
+    Description: Use como VITE_API_URL no build
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+  CloudFrontDomain:
+    Value: !GetAtt Distribution.DomainName
+  SiteBucket:
+    Value: !Ref SiteBucket
+  DistributionId:
+    Value: !Ref Distribution
