@@ -1,6 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Product } from "@/lib/data";
 
 const badgeStyles: Record<Product["badge"], string> = {
@@ -13,19 +11,12 @@ const badgeStyles: Record<Product["badge"], string> = {
 
 export function ProductCard({ product }: { product: Product }) {
   const gallery = product.images.length ? product.images : [product.image];
-  const [open, setOpen] = useState(false);
-  const [active, setActive] = useState(0);
-
-  const go = (dir: number) => setActive((i) => (i + dir + gallery.length) % gallery.length);
 
   return (
     <div className="group rounded-2xl border border-white/5 bg-surface p-4 transition-all hover:border-brand/50">
-      <button
-        type="button"
-        onClick={() => {
-          setActive(0);
-          setOpen(true);
-        }}
+      <Link
+        to="/produto/$id"
+        params={{ id: product.id }}
         aria-label={`Ver fotos de ${product.name}`}
         className="relative mb-4 block w-full aspect-[4/5] overflow-hidden rounded-xl"
       >
@@ -47,78 +38,7 @@ export function ProductCard({ product }: { product: Product }) {
             +{gallery.length - 1}
           </div>
         )}
-      </button>
-
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-pitch/95 p-4"
-          onClick={() => setOpen(false)}
-        >
-          <div className="w-full max-w-3xl" onClick={(e) => e.stopPropagation()}>
-            <div className="mb-3 flex items-center justify-between">
-              <p className="font-display text-lg font-black italic uppercase tracking-tight text-white">
-                {product.name}
-              </p>
-              <button
-                onClick={() => setOpen(false)}
-                aria-label="Fechar"
-                className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
-              >
-                <X className="size-4" />
-              </button>
-            </div>
-
-            <div className="relative aspect-[4/5] max-h-[65vh] overflow-hidden rounded-2xl border border-white/10 bg-surface">
-              <img
-                src={gallery[active]}
-                alt={`${product.name} — foto ${active + 1}`}
-                className="h-full w-full object-contain"
-              />
-              {gallery.length > 1 && (
-                <>
-                  <button
-                    onClick={() => go(-1)}
-                    aria-label="Foto anterior"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-pitch/70 p-2 text-white hover:bg-brand hover:text-pitch"
-                  >
-                    <ChevronLeft className="size-5" />
-                  </button>
-                  <button
-                    onClick={() => go(1)}
-                    aria-label="Próxima foto"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-pitch/70 p-2 text-white hover:bg-brand hover:text-pitch"
-                  >
-                    <ChevronRight className="size-5" />
-                  </button>
-                </>
-              )}
-            </div>
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              {gallery.map((src, i) => (
-                <button
-                  key={src + i}
-                  onClick={() => setActive(i)}
-                  aria-label={`Ver foto ${i + 1}`}
-                  className={`aspect-square w-16 overflow-hidden rounded-lg border transition-colors ${
-                    i === active ? "border-brand" : "border-white/10 hover:border-white/30"
-                  }`}
-                >
-                  <img src={src} alt="" className="h-full w-full object-cover" />
-                </button>
-              ))}
-            </div>
-
-            <Link
-              to="/produto/$id"
-              params={{ id: product.id }}
-              className="mt-4 block rounded-xl bg-brand py-3 text-center text-[10px] font-black uppercase tracking-[0.2em] text-pitch"
-            >
-              Ver página do produto
-            </Link>
-          </div>
-        </div>
-      )}
+      </Link>
 
       <div className="flex items-start justify-between">
         <div>
