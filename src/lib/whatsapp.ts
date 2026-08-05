@@ -1,7 +1,7 @@
 // Numero do WhatsApp do proprietario (formato internacional, so digitos).
 // Ex.: 55 + DDD + numero => 5511999999999
 export const OWNER_WHATSAPP =
-  (import.meta.env["VITE_OWNER_WHATSAPP"] as string | undefined)?.replace(/\D/g, "") || "5511999999999";
+  (import.meta.env["VITE_OWNER_WHATSAPP"] as string | undefined)?.replace(/\D/g, "") || "5513996079062";
 
 type OrderMessage = {
   orderId: string;
