@@ -4,9 +4,8 @@ import { useState } from "react";
 
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
-import { createOrder, type OrderResponse } from "@/lib/api";
+import { API_URL, createOrder, type OrderResponse } from "@/lib/api";
 import { useCart } from "@/lib/cart";
-import { API_URL } from "@/lib/api";
 import { newOrderId, whatsappOrderUrl } from "@/lib/whatsapp";
 
 export const Route = createFileRoute("/checkout")({
