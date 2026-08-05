@@ -4,8 +4,9 @@ import { useState } from "react";
 
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
-import { createOrder, type OrderResponse } from "@/lib/api";
+import { API_URL, createOrder, type OrderResponse } from "@/lib/api";
 import { useCart } from "@/lib/cart";
+import { newOrderId, whatsappOrderUrl } from "@/lib/whatsapp";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -32,6 +33,7 @@ function Checkout() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [order, setOrder] = useState<OrderResponse | null>(null);
+  const [waUrl, setWaUrl] = useState<string | null>(null);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -41,15 +43,22 @@ function Checkout() {
     setLoading(true);
     setError(null);
     try {
-      const res = await createOrder({
+      const payload = {
         customer: { name: form.name, email: form.email, phone: form.phone },
         shipping: { cep: form.cep, address: form.address, city: form.city, state: form.state },
         items: items.map(({ sku, name, size, price, qty }) => ({ sku, name, size, price, qty })),
         total,
-      });
+      };
+
+      // Se a Lambda estiver configurada, registra o pedido; senao gera um numero local.
+      let res: OrderResponse = { orderId: newOrderId(), status: "aguardando confirmacao" };
+      if (API_URL) res = await createOrder(payload);
+
+      const url = whatsappOrderUrl({ ...payload, orderId: res.orderId });
       setOrder(res);
+      setWaUrl(url);
       clear();
-      if (res.paymentUrl) window.location.href = res.paymentUrl;
+      window.open(url, "_blank", "noopener,noreferrer");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nao foi possivel criar o pedido.");
     } finally {
@@ -79,9 +88,22 @@ function Checkout() {
             <p className="mt-2 text-sm text-white/50">
               Status: {order.status}. Guarde este numero para acompanhar seu pedido.
             </p>
+            <p className="mt-4 text-sm text-white/50">
+              Enviamos o resumo para o WhatsApp da loja. Se a janela nao abriu, use o botao abaixo.
+            </p>
+            {waUrl && (
+              <a
+                href={waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex rounded-xl bg-brand px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-pitch"
+              >
+                Enviar pedido no WhatsApp
+              </a>
+            )}
             <button
               onClick={() => navigate({ to: "/" })}
-              className="mt-6 rounded-xl bg-brand px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-pitch"
+              className="mt-6 block rounded-xl border border-white/10 px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-white/60"
             >
               Voltar ao catalogo
             </button>
@@ -119,7 +141,7 @@ function Checkout() {
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand py-4 text-[10px] font-black uppercase tracking-[0.2em] text-pitch transition-opacity hover:opacity-90 disabled:opacity-40"
               >
                 {loading && <Loader2 className="size-3 animate-spin" />}
-                {loading ? "Enviando pedido" : `Pagar R$ ${total}`}
+                {loading ? "Enviando pedido" : `Finalizar no WhatsApp - R$ ${total}`}
               </button>
             </form>
 
