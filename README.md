@@ -1,14 +1,18 @@
-# Welcome to your Lovable project
+# MJR Team Styles
+
+Olá. Eu quero criar um site-catálogo que tem roupas de times. O site será chamado de MJR Imports e será hospedada na aws com as fotos armazenadas no S3 e o backend funcioando com lambda.
 
 This project was built with [Lovable](https://lovable.dev).
 
+**Live app**: https://teamwear-tapestry.lovable.app
+
 ## Build with Lovable
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/6009a035-b1a2-43d4-a880-29ab6e346854).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## Development
 
@@ -20,10 +24,3 @@ cd <repository-name>
 npm i
 npm run dev
 ```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
